@@ -1,28 +1,9 @@
 import test from 'ava';
-import * as redis from 'fakeredis';
-import { RedisClient } from 'redis';
 import * as td from 'testdouble';
-import { Quota, QuotaManager, RedisQuotaManager } from '../src';
+import { Quota, QuotaManager } from '../src';
 import { pRateLimit } from '../src/rateLimit';
 import { RateLimitTimeoutError } from '../src/rateLimitTimeoutError';
-import { sleep, uniqueId } from '../src/util';
-
-// testing requires a real Redis server
-// fakeredis, redis-mock, redis-js, etc. have missing or broken client.duplicate()
-const REDIS_SERVER = 'localhost';
-const REDIS_PORT = 6379;
-
-/** Wait until the RQM is online */
-async function waitForReady(rqm: RedisQuotaManager) {
-  const expireAt = Date.now() + 5000;
-  while (!rqm.ready) {
-    if (Date.now() >= expireAt) {
-      throw new Error('RedisQuotaManager still not ready after 5 seconds');
-    }
-    await sleep(100);
-  }
-  await sleep(100);
-}
+import { sleep } from '../src/util';
 
 function mockApi(sleepTime: number) {
   const fn = async (err: Error = null): Promise<void> => {
@@ -152,40 +133,6 @@ test('combined rate limits and concurrency are enforced', async t => {
     }
     await sleep(200);
   }
-});
-
-test('API calls are queued until RedisQuotaManager is ready', async t => {
-  const clients: RedisClient[] = [
-    redis.createClient(REDIS_PORT, REDIS_SERVER),
-    redis.createClient(REDIS_PORT, REDIS_SERVER)
-  ];
-  const quota: Quota = { rate: 300, interval: 1000, concurrency: 100 };
-  const qm: RedisQuotaManager = new RedisQuotaManager(quota, uniqueId(), clients);
-
-  const rateLimit = pRateLimit(qm);
-
-  const api = mockApi(500);
-
-  const promises = [
-    rateLimit(() => api()),
-    rateLimit(() => api()),
-    rateLimit(() => api()),
-    rateLimit(() => api()),
-    rateLimit(() => api())
-  ];
-
-  t.is(qm.activeCount, 0);
-  t.is(api['fulfillCount'], 0);
-
-  await waitForReady(qm);
-
-  t.is(qm.activeCount, promises.length, 'all the jobs are running now');
-  t.is(api['fulfillCount'], 0, 'none of the jobs are completed yet');
-
-  await Promise.all(promises);
-
-  t.is(qm.activeCount, 0, 'no jobs are running now');
-  t.is(api['fulfillCount'], promises.length, 'all of the jobs are completed');
 });
 
 test('can handle API calls that reject', async t => {

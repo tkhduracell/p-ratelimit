@@ -4,7 +4,7 @@ import { Quota } from './quota';
 /** keep track of API invocations, allowing or disallowing them based on our quota */
 export class QuotaManager {
   protected _activeCount = 0;
-  protected history = new Dequeue();
+  protected history = new Dequeue<number>();
 
   constructor(protected _quota: Quota) {
     if (typeof _quota !== 'object') {

@@ -10,9 +10,4 @@ export interface Quota {
    * (default: 0, disabled)
    */
   maxDelay?: number;
-  /**
-   * (Redis only): if true, immediately begin processing requests using the full quota,
-   * instead of waiting several seconds to discover other servers (default: false)
-   */
-  fastStart?: boolean;
 }

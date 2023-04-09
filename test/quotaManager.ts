@@ -1,6 +1,5 @@
 import { Quota, QuotaManager } from '../src';
 
-import { sleep } from '../src/util';
 import test from 'ava';
 
 test('invocations are logged', async t => {

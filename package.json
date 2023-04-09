@@ -1,6 +1,6 @@
 {
   "name": "p-ratelimit",
-  "version": "1.0.1",
+  "version": "1.0.1-fork",
   "description": "Promise-based utility to make sure you don’t call rate-limited APIs too quickly.",
   "repository": "natesilva/p-ratelimit",
   "license": "MIT",
@@ -23,27 +23,19 @@
     "tokenbucket"
   ],
   "engines": {
-    "node": ">=10.23.0"
+    "node": ">=16"
   },
   "devDependencies": {
-    "@types/ioredis": "^4.17.8",
-    "@types/node": "^10.17.48",
-    "@types/redis": "^2.8.28",
-    "ava": "^3.14.0",
+    "@types/node": "^16.18.23",
+    "ava": "^3.15.0",
     "del-cli": "^3.0.1",
-    "fakeredis": "^2.0.0",
-    "ioredis": "^4.19.2",
-    "np": "^7.0.0",
+    "np": "^7.7.0",
     "nyc": "^15.1.0",
-    "prettier": "^2.2.1",
-    "testdouble": "^3.16.1",
-    "ts-node": "^9.1.1",
+    "prettier": "^2.8.7",
+    "testdouble": "^3.17.2",
+    "ts-node": "^10.9.1",
     "tslint": "^6.1.3",
     "typescript": "^4.1.2"
   },
-  "dependencies": {},
-  "volta": {
-    "node": "10.23.0",
-    "npm": "6.14.9"
-  }
+  "dependencies": {}
 }

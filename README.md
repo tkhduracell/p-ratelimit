@@ -1,17 +1,17 @@
-# p-ratelimit [![npm](https://img.shields.io/npm/v/p-ratelimit.svg)](https://www.npmjs.com/package/p-ratelimit) [![license](https://img.shields.io/github/license/natesilva/p-ratelimit.svg)](https://github.com/natesilva/p-ratelimit/blob/master/LICENSE) [![node](https://img.shields.io/node/v/p-ratelimit.svg)](https://www.npmjs.com/package/p-ratelimit)
+# p-ratelimit
+
+Fork of [p-ratelimit](https://www.npmjs.com/package/p-ratelimit) by Nate Silva, without redis.
 
 > Makes sure you don’t call rate-limited APIs too quickly.
 
 This is an easy-to-use utility for calling rate-limited APIs. It will prevent you from exceeding rate limits by queueing requests that would go over your rate limit quota.
-
-Rate-limits can be applied across multiple servers if you use Redis.
 
 It works with any API function that returns a Promise.
 
 ## Install
 
 ```
-$ npm i p-ratelimit
+$ npm i git+https://github.com/tkhduracell/p-ratelimit.git --save
 ```
 
 ## What’s different
@@ -25,8 +25,6 @@ $ npm i p-ratelimit
 * **Minimal implementation**
     * Utilities like [limiter](https://github.com/jhurliman/node-rate-limiter) provide low-level tooling that requires you to manage tokens and provide your own queue.
     * **p-ratelimit** requires minimal modification to your existing code.
-* **Distributed rate limits**
-    * If you use Redis, **p-ratelimit** supports efficient rate limiting across multiple hosts. The quota is divided among your pool of servers. As servers are added or removed, the shared quota is recaclulated.
 * **Made for Promises and TypeScript friendly**
     * A rate-limited function returns the same Promise type as the original function.
 
@@ -77,41 +75,8 @@ If you want both rate limiting and concurrency, use all three of the above setti
 ### Other options
 
 * `maxDelay`: the maximum amount of time to wait (in milliseconds) before rejecting an API request with `RateLimitTimeoutError` (default: `0`, no timeout)
-* `fastStart` (Redis only): if true, immediately begin processing requests using the full quota, instead of waiting several seconds to discover other servers (default: `false`)
 
 If you make an API request that would exceed rate limits, it’s queued and delayed until it can run within the rate limits. Setting `maxDelay` will cause the API request to fail if it’s delayed too long.
-
-See the [Using Redis](https://github.com/natesilva/p-ratelimit/blob/master/UsingRedis.md) section for a discussion of the `fastStart` option.
-
-## Distributed rate limits
-
-See [Using Redis](https://github.com/natesilva/p-ratelimit/blob/master/UsingRedis.md) for a detailed discussion.
-
-You can use Redis to coordinate a rate limit among a pool of servers.
-
-```javascript
-const { pRateLimit, RedisQuotaManager } = require('p-ratelimit');
-
-// These must be the same across all servers that share this quota:
-const channelName = 'my-api-family';
-const quota = { rate: 100, interval: 1000, concurrency: 50 };
-
-// Create a RedisQuotaManager
-const qm = new RedisQuotaManager(
-    quota,
-    channelName,
-    redisClient
-);
-
-// Create a rate limiter that uses the RedisQuotaManager
-const limit = pRateLimit(qm);
-
-// now use limit(…) as usual
-```
-
-Each server that registers with a given `channelName` will be allotted `1/(number of servers)` of the available quota. For example, if the pool consists of four servers, each will receive 1/4 the available quota.
-
-When a new server joins the pool, the quota is dynamically adjusted. If a server goes away, its quota is reallocated among the remaining servers within a few minutes.
 
 ## License
 
